@@ -1,0 +1,304 @@
+const Desklet = imports.ui.desklet;
+const St = imports.gi.St;
+const Cinnamon = imports.gi.Cinnamon;
+const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
+const Main = imports.ui.main;
+const PopupMenu = imports.ui.popupMenu;
+const Clutter = imports.gi.Clutter;
+const Tooltips = imports.ui.tooltips;
+
+const STORAGE_PATH = GLib.get_home_dir() + '/.config/cinnamon_grid_launcher_data.json';
+
+class MyDesklet extends Desklet.Desklet {
+
+    _init(metadata, instance_id) {
+        super._init(metadata, instance_id);
+
+        this.instance_id = instance_id;
+        this.appSystem = Cinnamon.AppSystem.get_default();
+        this._menuManager = new PopupMenu.PopupMenuManager(this);
+        this._itemMenus = [];
+
+        this._loadData();
+        this.setHeader(this.deskletLabel || "Grille Lanceur");
+
+        // Ajout d'un fond par défaut pour qu'il soit visible immédiatement
+        this.mainBox = new St.BoxLayout({
+            style_class: 'desklet-drag-area',
+            vertical: true,
+            reactive: true,
+            style: "background-color: rgba(20, 20, 20, 0.75); border-radius: 8px; padding: 6px;"
+        });
+
+        if (this.deskletWidth && this.deskletHeight) {
+            this.mainBox.set_size(this.deskletWidth, this.deskletHeight);
+        }
+
+        this.titleLabel = new St.Label({
+            style: "text-align: center; font-weight: bold; font-size: 11pt; padding: 4px; color: white;",
+            text: this.deskletLabel || "Mon Lanceur",
+            reactive: true
+        });
+
+        this.titleEntry = new St.Entry({
+            style: "margin: 4px; font-size: 10pt; min-width: 140px; background-color: rgba(30, 30, 30, 0.9); color: white; padding: 4px; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px;",
+            visible: false,
+            reactive: true
+        });
+
+        this.titleLabel.connect('button-press-event', (actor, event) => {
+            if (event.get_click_count() === 2 && event.get_button() === 1) {
+                this._startRename();
+                return true;
+            }
+            return false;
+        });
+
+        let renameItem = new PopupMenu.PopupMenuItem("Renommer ce lanceur");
+        renameItem.connect('activate', () => this._startRename());
+        this._menu.addMenuItem(renameItem);
+
+        this.titleEntry.clutter_text.connect('activate', () => {
+            this.deskletLabel = this.titleEntry.text.trim();
+            this.titleLabel.text = this.deskletLabel || "Mon Lanceur";
+            this.setHeader(this.deskletLabel || "Grille Lanceur");
+
+            Main.popModal(this.titleEntry);
+            this.titleEntry.hide();
+            this.titleLabel.show();
+            this._saveData();
+        });
+
+        this.titleEntry.clutter_text.connect('key-press-event', (actor, event) => {
+            if (event.get_key_symbol() === Clutter.KEY_Escape) {
+                Main.popModal(this.titleEntry);
+                this.titleEntry.hide();
+                this.titleLabel.show();
+                return true;
+            }
+            return false;
+        });
+
+        this.grid = new St.Table({ homogeneous: true, style_class: 'popup-grid' });
+
+        this.mainBox.add_actor(this.titleLabel);
+        this.mainBox.add_actor(this.titleEntry);
+        this.mainBox.add_actor(this.grid);
+        this.setContent(this.mainBox);
+
+        this.actor._delegate = this;
+        this._refreshUI();
+    }
+
+    on_desklet_resize(width, height) {
+        this.deskletWidth = width;
+        this.deskletHeight = height;
+        this.mainBox.set_size(width, height);
+        this._saveData();
+    }
+
+    _startRename() {
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+            this.titleLabel.hide();
+            this.titleEntry.text = this.deskletLabel || "Mon Lanceur";
+            this.titleEntry.show();
+
+            this.titleEntry.clutter_text.grab_key_focus();
+            Main.pushModal(this.titleEntry);
+            return false;
+        });
+    }
+
+    handleDragOver(source, actor, x, y, time) {
+        return true;
+    }
+
+    acceptDrop(source, actor, x, y, time) {
+        let item = null;
+
+        if (source && source.app && typeof source.app.get_id === 'function') {
+            item = { type: 'app', id: source.app.get_id() };
+        } else if (source && typeof source.get_app_id === 'function') {
+            item = { type: 'app', id: source.get_app_id() };
+        } else {
+            let uri = null;
+            if (source) {
+                if (typeof source.get_uri === 'function') uri = source.get_uri();
+                else if (source.uri) uri = source.uri;
+                else if (source.uris && source.uris.length > 0) uri = source.uris[0];
+                else if (source.file && typeof source.file.get_uri === 'function') uri = source.file.get_uri();
+            }
+            if (!uri && actor && actor._delegate) {
+                let d = actor._delegate;
+                if (typeof d.get_uri === 'function') uri = d.get_uri();
+                else if (d.uri) uri = d.uri;
+                else if (d.file && typeof d.file.get_uri === 'function') uri = d.file.get_uri();
+            }
+
+            if (uri) {
+                item = { type: 'uri', id: uri };
+            }
+        }
+
+        if (item) {
+            if (!this.savedItems.some(i => i.id === item.id)) {
+                this.savedItems.push(item);
+                this._saveData();
+                this._refreshUI();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    _refreshUI() {
+        for (let menu of this._itemMenus) {
+            menu.destroy();
+        }
+        this._itemMenus = [];
+        this.grid.destroy_all_children();
+
+        let columns = 2;
+        let totalSlots = Math.max(4, this.savedItems.length);
+        if (totalSlots % columns !== 0) {
+            totalSlots += (columns - (totalSlots % columns));
+        }
+
+        for (let i = 0; i < totalSlots; i++) {
+            let row = Math.floor(i / columns);
+            let col = i % columns;
+
+            let item = this.savedItems[i];
+
+            if (item) {
+                let btn = new St.Button({ style_class: 'app-button', reactive: true, style: "padding: 4px;" });
+                let icon = null;
+                let displayName = "";
+
+                if (item.type === 'app') {
+                    let app = this.appSystem.lookup_app(item.id);
+                    icon = app ? app.create_icon_texture(64) : new St.Icon({ icon_name: 'application-x-executable', icon_size: 64 });
+                    displayName = app ? app.get_name() : item.id;
+                    btn.connect('clicked', () => { if (app) app.activate(); });
+                } else {
+                    try {
+                        let file = Gio.File.new_for_uri(item.id);
+                        let fileInfo = file.query_info('standard::display-name,standard::icon', Gio.FileQueryInfoFlags.NONE, null);
+                        icon = new St.Icon({ gicon: fileInfo.get_icon(), icon_size: 64 });
+                        displayName = fileInfo.get_display_name();
+                    } catch (e) {
+                        let fallback = item.id.includes('://') && !item.id.startsWith('file://') ? 'folder-remote' : 'folder';
+                        icon = new St.Icon({ icon_name: fallback, icon_size: 64 });
+                        displayName = GLib.path_get_basename(item.id);
+                    }
+                    btn.connect('clicked', () => {
+                        Gio.app_info_launch_default_for_uri(item.id, null);
+                    });
+                }
+
+                btn.set_child(icon);
+
+                new Tooltips.Tooltip(btn, displayName);
+
+                let menu = new PopupMenu.PopupMenu(btn, 0.5, St.Side.BOTTOM);
+                this._menuManager.addMenu(menu);
+                Main.uiGroup.add_actor(menu.actor);
+                menu.actor.hide();
+                this._itemMenus.push(menu);
+
+                let menuItem = new PopupMenu.PopupMenuItem("Retirer l'élément");
+                menuItem.connect('activate', () => {
+                    this.savedItems.splice(i, 1);
+                    this._saveData();
+                    this._refreshUI();
+                });
+                menu.addMenuItem(menuItem);
+
+                btn.connect('button-press-event', (actor, event) => {
+                    if (event.get_button() === 3) {
+                        menu.toggle();
+                        return true;
+                    }
+                    return false;
+                });
+
+                btn.connect('button-release-event', (actor, event) => {
+                    if (event.get_button() === 3) {
+                        return true;
+                    }
+                    return false;
+                });
+
+                this.grid.add(btn, { row: row, col: col });
+            } else {
+                // Style des cases vides renforcé pour être visible sur fond clair ou sombre
+                let placeholder = new St.Bin({
+                    style: "width: 76px; height: 76px; margin: 4px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 6px; background-color: rgba(255,255,255,0.05);",
+                    reactive: false
+                });
+                this.grid.add(placeholder, { row: row, col: col });
+            }
+        }
+    }
+
+    _loadData() {
+        this.savedItems = [];
+        this.deskletLabel = "";
+        this.deskletWidth = 0;
+        this.deskletHeight = 0;
+        try {
+            let file = Gio.File.new_for_path(STORAGE_PATH);
+            if (file.query_exists(null)) {
+                let [success, content] = file.load_contents(null);
+                if (success) {
+                    let json = JSON.parse(String(content));
+                    let data = json[this.instance_id];
+                    if (data) {
+                        if (Array.isArray(data)) {
+                            this.savedItems = data;
+                        } else {
+                            this.savedItems = data.items || [];
+                            this.deskletLabel = data.label || "";
+                            this.deskletWidth = data.width || 0;
+                            this.deskletHeight = data.height || 0;
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            global.logError(e);
+        }
+    }
+
+    _saveData() {
+        try {
+            let file = Gio.File.new_for_path(STORAGE_PATH);
+            let currentData = {};
+            if (file.query_exists(null)) {
+                let [success, content] = file.load_contents(null);
+                if (success) currentData = JSON.parse(String(content));
+            }
+            currentData[this.instance_id] = {
+                label: this.deskletLabel,
+                items: this.savedItems,
+                width: this.deskletWidth,
+                height: this.deskletHeight
+            };
+            file.replace_contents(JSON.stringify(currentData), null, false, Gio.FileCreateFlags.NONE, null);
+        } catch (e) {
+            global.logError(e);
+        }
+    }
+
+    on_desklet_removed_from_desktop() {
+        for (let menu of this._itemMenus) {
+            menu.destroy();
+        }
+        super.on_desklet_removed_from_desktop();
+    }
+}
+
+function main(metadata, instance_id) {
+    return new MyDesklet(metadata, instance_id);
+}
