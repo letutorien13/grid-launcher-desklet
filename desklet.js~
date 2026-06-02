@@ -234,7 +234,7 @@ class MyDesklet extends Desklet.Desklet {
             } else {
                 // Style des cases vides renforcé pour être visible sur fond clair ou sombre
                 let placeholder = new St.Bin({
-                    style: "width: 76px; height: 76px; margin: 4px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 6px; background-color: rgba(255,255,255,0.2);",
+                    style: "width: 76px; height: 76px; margin: 4px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 6px; background-color: rgba(255,255,255,0.05);",
                     reactive: false
                 });
                 this.grid.add(placeholder, { row: row, col: col });
