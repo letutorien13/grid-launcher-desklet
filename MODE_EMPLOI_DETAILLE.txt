@@ -1,0 +1,366 @@
+================================================================================
+  GRILLE LANCEUR v2 — Mode d'emploi détaillé
+  Desklet Cinnamon pour Linux Mint et distributions Cinnamon
+================================================================================
+
+  Version document : juin 2026
+  Desklet          : grid-launcher-v2@local
+  Auteur desklet   : usage local / letutorien (selon votre dépôt)
+
+
+================================================================================
+  1. QU'EST-CE QUE GRILLE LANCEUR v2 ?
+================================================================================
+
+  Grille Lanceur v2 est un desklet (petit module sur le bureau) qui affiche
+  vos raccourcis sous forme :
+
+    • MODE GRILLE : grandes icônes dans un tableau (colonnes × lignes)
+    • MODE LISTE : petite icône + nom du programme sur chaque ligne
+
+  Vous remplissez la grille ou la liste en glissant-déposer des éléments depuis
+  le menu Cinnamon ou depuis les icônes du bureau (Nemo). Vous lancez un
+  raccourci d'un clic gauche. Vous organisez et redimensionnez le desklet via
+  son menu contextuel.
+
+  Chaque desklet ajouté au bureau est une instance indépendante (ex. « Jeux »,
+  « Bureau », « Outils »), avec son titre et ses raccourcis propres.
+
+
+================================================================================
+  2. PRÉREQUIS
+================================================================================
+
+  • Système : Linux avec bureau Cinnamon (ex. Linux Mint 21.x / 22.x, Cinnamon 6.x)
+  • Icônes du bureau : en général gérées par Nemo (option « Afficher icônes
+    du bureau » activée dans les préférences de Nemo)
+  • Dossier desklet installé ici :
+      ~/.local/share/cinnamon/desklets/grid-launcher-v2@local/
+
+  Contenu attendu du dossier :
+      desklet.js
+      metadata.json
+      stylesheet.css
+      MODE_EMPLOI_DETAILLE.txt  (ce fichier)
+      POST_FACEBOOK.txt
+
+
+================================================================================
+  3. INSTALLATION (étape par étape)
+================================================================================
+
+  Étape 1 — Copier les fichiers
+  ─────────────────────────────
+  Copiez le dossier complet « grid-launcher-v2@local » dans :
+
+      ~/.local/share/cinnamon/desklets/
+
+  (Créez le dossier « desklets » s'il n'existe pas.)
+
+  Étape 2 — Recharger Cinnamon
+  ────────────────────────────
+  Appuyez sur Alt + F2, tapez la lettre  r  puis Entrée.
+  (Ou redémarrez la session Cinnamon.)
+
+  Étape 3 — Ajouter le desklet au bureau
+  ──────────────────────────────────────
+  • Clic droit sur le bureau → « Desklets » ou « Gestionnaire de desklets »
+  • Cherchez « Grille Lanceur v2 »
+  • Cliquez sur « Ajouter au bureau » (ou glissez l'entrée vers le bureau)
+
+  Étape 4 — Plusieurs grilles (optionnel)
+  ───────────────────────────────────────
+  Vous pouvez ajouter plusieurs instances : chacune a son identifiant interne,
+  son titre et sa liste de raccourcis séparés dans le fichier de données.
+
+
+================================================================================
+  4. PRÉSENTATION À L'ÉCRAN
+================================================================================
+
+  En haut : un titre (par défaut « Mes raccourcis »), modifiable.
+
+  En dessous :
+    • Mode grille : tableau d'icônes + cases vides (bordure pointillée)
+    • Mode liste  : lignes défilantes si beaucoup d'éléments (au-delà de 16)
+
+  Le desklet a un cadre sombre arrondi. Vous pouvez le déplacer sur le bureau
+  comme n'importe quel desklet Cinnamon (glisser le desklet lui-même, pas les
+  icônes à l'intérieur).
+
+
+================================================================================
+  5. AJOUTER DES RACCOURCIS (glisser-déposer)
+================================================================================
+
+  5.1 Depuis le menu Cinnamon (applications)
+  ───────────────────────────────────────────
+  1. Ouvrez le menu des applications.
+  2. Cliquez sur une application et, sans relâcher, glissez vers le desklet.
+  3. Relâchez au-dessus d'une case (grille) ou de la zone liste.
+  4. L'application est ajoutée à la première place libre.
+  5. Si elle est déjà dans la liste, elle n'est pas dupliquée.
+
+  5.2 Depuis le bureau (icônes Nemo)
+  ─────────────────────────────────
+  1. Sur le bureau, cliquez sur une icône (raccourci, fichier, dossier).
+  2. Glissez vers le desklet Grille Lanceur v2.
+  3. Relâchez au-dessus du desklet (grille ou liste).
+  4. L'élément est copié dans le lanceur : l'icône d'origine reste sur le bureau.
+
+  Types gérés :
+    • Raccourcis .desktop du bureau → application Cinnamon si reconnue
+    • Fichiers et dossiers → ouverts avec l'application par défaut
+    • Dossiers → lancement / ouverture via l'URI du fichier
+
+  5.3 Ordre d'insertion
+  ─────────────────────
+  Les nouveaux éléments prennent la première case libre en mode grille (de
+  gauche à droite, puis ligne suivante). En mode liste, ils s'ajoutent en bas ;
+  le nombre de lignes visibles s'ajuste automatiquement.
+
+
+================================================================================
+  6. UTILISER UN RACCOURCI
+================================================================================
+
+  • Clic gauche sur l'icône ou la ligne → lance l'application ou ouvre le fichier.
+  • Survol (mode grille) : infobulle avec le nom du programme.
+  • Survol (mode liste) : infobulle sur toute la ligne.
+
+
+================================================================================
+  7. RETIRER UN RACCOURCI
+================================================================================
+
+  Important : utilisez le menu de l'ICÔNE, pas celui du desklet entier.
+
+  1. Clic droit directement sur l'icône ou la ligne du raccourci.
+  2. Choisissez « Retirer l'élément ».
+  3. Le menu apparaît près du curseur (sous l'icône).
+  4. Le raccourci disparaît ; la grille peut se réduire automatiquement si des
+     colonnes ou lignes deviennent vides (mode grille).
+
+  Si le menu du desklet (Renommer, colonnes…) s'ouvre à la place :
+    → Vous avez cliqué à côté de l'icône ; recommencez sur l'icône elle-même.
+
+
+================================================================================
+  8. RENOMMER LE TITRE DU DESKLET
+================================================================================
+
+  Méthode A — Double-clic
+  ──────────────────────
+  1. Double-clic gauche sur le titre en haut du desklet.
+  2. Saisissez le nouveau nom.
+  3. Entrée pour valider, Échap pour annuler.
+
+  Méthode B — Menu contextuel
+  ───────────────────────────
+  1. Clic droit sur le desklet (zone sans icône : titre, case vide, bord).
+  2. « Renommer ».
+  3. Même saisie qu'ci-dessus.
+
+
+================================================================================
+  9. MENU CONTEXTUEL DU DESKLET (clic droit hors icône)
+================================================================================
+
+  Ouvrez ce menu en cliquant sur le titre, une case vide (pointillés) ou le
+  fond du cadre — pas sur une icône de raccourci.
+
+  Entrées disponibles :
+
+    Renommer
+      → Modifier le titre affiché en haut.
+
+    Trier par nom
+      → Classe les raccourcis par ordre alphabétique (nom affiché).
+
+    Afficher en mode liste / Afficher en mode grille
+      → Bascule entre les deux affichages. Le choix est mémorisé.
+
+    Ajouter une colonne      (mode grille uniquement)
+    Retirer une colonne      (mode grille uniquement)
+    Ajouter une ligne        (mode grille uniquement)
+    Retirer une ligne        (mode grille uniquement)
+      → Agrandit ou réduit le tableau. Limites : 3 à 16 colonnes, 2 à 16 lignes.
+
+
+================================================================================
+  10. MODE GRILLE (détail)
+================================================================================
+
+  • Affichage en icônes grandes dans un tableau.
+  • Taille minimale : 3 colonnes × 2 lignes (impossible de descendre en dessous).
+  • Cases vides : bordure en pointillés ; servent à réserver de la place avant
+    d'y déposer de nouvelles applications.
+  • Redimensionnement : menu « Ajouter / Retirer colonne ou ligne » (voir §11).
+  • Réduction automatique : après suppression de raccourcis, les colonnes et
+    lignes entièrement vides à droite et en bas sont supprimées, sans passer
+    sous 3×2.
+
+
+================================================================================
+  11. MODE LISTE (détail)
+================================================================================
+
+  • Chaque raccourci = une ligne : petite icône + nom à droite.
+  • Clic gauche : lancer · Clic droit sur la ligne : « Retirer l'élément ».
+  • Pas de menu « colonnes » en mode liste (colonnes masquées).
+  • Hauteur : le desklet ajoute automatiquement assez de lignes pour afficher
+    tous les raccourcis présents.
+  • Au-delà de 16 éléments : zone de défilement à l'intérieur du desklet.
+  • Noms trop longs : tronqués avec « … » ; infobulle au survol.
+
+
+================================================================================
+  12. REDIMENSIONNER LA GRILLE (mode grille)
+================================================================================
+
+  Le redimensionnement officiel se fait par le menu du desklet (§9), pas en
+  tirant les bords du cadre.
+
+  Exemple pour une grille plus large :
+    1. Clic droit sur le desklet (hors icône).
+    2. « Ajouter une colonne » (répéter si besoin).
+    3. Des cases vides apparaissent ; glissez-y de nouvelles apps.
+
+  Exemple pour réduire :
+    1. Retirez d'abord les raccourcis inutiles (menu icône).
+    2. « Retirer une colonne » ou « Retirer une ligne » si le menu le permet.
+    3. Sinon la réduction automatique enlève les rangées/colonnes vides.
+
+
+================================================================================
+  13. DÉPLACER LE DESKLET SUR LE BUREAU
+================================================================================
+
+  • Mode « Desklets » de Cinnamon : glisser le desklet par son cadre ou sa zone
+    de titre selon le comportement de votre version.
+  • La position est enregistrée par Cinnamon (paramètres enabled-desklets).
+  • Les raccourcis à l'intérieur ne se déplacent pas sur le bureau : seul le
+    bloc desklet change de place.
+
+
+================================================================================
+  14. DEUX MENUS — RÉCAPITULATIF (à ne pas confondre)
+================================================================================
+
+  ┌────────────────────────────┬──────────────────────────────────────────┐
+  │ Où vous cliquez            │ Ce que vous obtenez                      │
+  ├────────────────────────────┼──────────────────────────────────────────┤
+  │ Clic droit SUR une icône   │ « Retirer l'élément » uniquement         │
+  │ ou une ligne (liste)     │                                          │
+  ├────────────────────────────┼──────────────────────────────────────────┤
+  │ Clic droit HORS icône      │ Renommer, Trier, Mode liste/grille,      │
+  │ (titre, vide, bord)        │ Colonnes/lignes (grille)                 │
+  └────────────────────────────┴──────────────────────────────────────────┘
+
+
+================================================================================
+  15. DONNÉES ENREGISTRÉES ET SAUVEGARDE
+================================================================================
+
+  Fichier unique pour toutes les instances :
+
+      ~/.config/cinnamon_grid_launcher_data.json
+
+  Pour chaque instance, clé du type :  v2:IDENTIFIANT_INSTANCE
+
+  Contenu enregistré :
+    • label        — titre du desklet (ex. « Mes raccourcis »)
+    • items        — tableau des raccourcis (type app ou uri, identifiant)
+    • columns      — nombre de colonnes (mode grille)
+    • rows         — nombre de lignes (grille ou hauteur liste)
+    • displayMode  — « grid » ou « list »
+
+  Conseil : copiez ce fichier avant de réinstaller le système ou de modifier
+  le desklet. Pour restaurer, replacez-le puis Alt+F2 → r.
+
+
+================================================================================
+  16. PLUSIEURS INSTANCES SUR LE MÊME BUREAU
+================================================================================
+
+  Exemples d'usage :
+    • Instance 1 : « Travail » — apps bureautique
+    • Instance 2 : « Loisirs » — jeux et média
+    • Instance 3 : « Système » — outils et paramètres
+
+  Chaque instance a sa propre entrée dans le JSON. Supprimer un desklet depuis
+  le gestionnaire retire l'affichage ; les données peuvent rester dans le JSON
+  (réutilisables si vous réajoutez une instance).
+
+
+================================================================================
+  17. DÉPANNAGE
+================================================================================
+
+  Le desklet n'apparaît pas dans le gestionnaire
+    → Vérifier le nom du dossier : grid-launcher-v2@local
+    → Vérifier la présence de desklet.js et metadata.json
+    → Alt+F2 → r
+
+  Après mise à jour des fichiers du desklet
+    → Toujours Alt+F2 → r
+
+  Le menu « Renommer / colonnes » s'ouvre au lieu de « Retirer l'élément »
+    → Clic droit plus précis sur l'icône, pas entre deux icônes
+
+  Glisser depuis le bureau ne fait rien
+    → Relâcher le curseur au-dessus du cadre du desklet (pas à côté)
+    → Recharger Cinnamon (Alt+F2 → r) après installation
+    → Vérifier que les icônes du bureau Nemo sont activées
+
+  Glisser depuis le menu ne fait rien
+    → Déposer sur une case ou sur la zone liste visible
+    → L'app est peut-être déjà dans la grille (pas de doublon)
+
+  La grille ne grandit pas assez
+    → Menu desklet → « Ajouter une colonne » ou « Ajouter une ligne »
+    → En mode liste, les lignes suivent le nombre de raccourcis automatiquement
+
+  Titre ou raccourcis perdus après reinstallation
+    → Restaurer ~/.config/cinnamon_grid_launcher_data.json depuis une copie
+
+  Erreur JavaScript / desklet grisé
+    → Consulter Looking Glass (Alt+F2 → lg → onglet Errors)
+    → Restaurer desklet.js depuis une sauvegarde .bak-*
+
+
+================================================================================
+  18. RACCOURCIS CLAVIER UTILES (Cinnamon)
+================================================================================
+
+  Alt + F2  puis  r     → Recharger Cinnamon (après changement du desklet)
+  Alt + F2  puis  lg    → Looking Glass (débogage avancé)
+
+
+================================================================================
+  19. FICHIERS DU PROJET (référence)
+================================================================================
+
+  desklet.js              — Logique principale
+  metadata.json           — Nom et description dans le gestionnaire
+  stylesheet.css          — Apparence (cadre, liste, cases vides)
+  MODE_EMPLOI_DETAILLE.txt — Ce mode d'emploi
+  POST_FACEBOOK.txt       — Texte court pour publication Facebook
+  MODE_EMPLOI_GITHUB.txt  — Version courte pour dépôt GitHub (si présente)
+
+
+================================================================================
+  20. RÉSUMÉ RAPIDE (mémo)
+================================================================================
+
+  Ajouter     → Glisser menu Cinnamon ou icône bureau vers le desklet
+  Lancer      → Clic gauche
+  Retirer     → Clic droit sur l'icône → Retirer l'élément
+  Organiser   → Menu desklet : Trier par nom, mode liste/grille
+  Agrandir    → Menu desklet : Ajouter colonne/ligne (grille)
+  Renommer    → Double-clic titre ou menu Renommer
+  Recharger   → Alt+F2 → r
+
+================================================================================
+  Fin du mode d'emploi détaillé — Grille Lanceur v2
+================================================================================
