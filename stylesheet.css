@@ -1,0 +1,56 @@
+.gl2-frame {
+    background-color: rgba(28, 28, 32, 0.96);
+    border-radius: 8px;
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.22);
+}
+
+.gl2-frame.gl2-resizing {
+    border-color: rgba(120, 180, 255, 0.85);
+}
+
+.gl2-title {
+    font-weight: bold;
+    font-size: 11pt;
+    color: #eee;
+    padding-bottom: 6px;
+}
+
+.gl2-title-entry {
+    margin-bottom: 6px;
+    color: #fff;
+}
+
+.gl2-cell-btn {
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gl2-cell-empty {
+    width: 56px;
+    height: 56px;
+    margin: 4px;
+    border: 2px dashed rgba(255, 255, 255, 0.28);
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.gl2-list-scroll {
+    padding: 0;
+}
+
+.gl2-list-row {
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.gl2-list-row:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.gl2-list-label {
+    color: #eeeeee;
+    font-size: 10pt;
+}

@@ -1,0 +1,23 @@
+Grille Lanceur v2 — desklet Cinnamon pour Linux Mint
+
+Une grille de raccourcis sur le bureau, simple et efficace.
+
+En pratique :
+• Glisser une app depuis le menu Cinnamon → elle s’ajoute à la grille
+• Clic gauche → lancer
+• Clic droit sur une icône → « Retirer l’élément »
+• Clic droit sur le desklet (pas sur une icône) → ajouter ou retirer des colonnes et des lignes pour redimensionner la grille
+• Mode liste : icône + nom sur chaque ligne (préféré si vous n’aimez pas la grille d’icônes)
+• Trier par nom · Les lignes et colonnes vides inutiles disparaissent toutes seules
+• Double-clic sur le titre pour renommer le lanceur
+
+Installation :
+1) Dossier grid-launcher-v2@local dans ~/.local/share/cinnamon/desklets/
+2) Alt+F2 → r
+3) Gestionnaire de desklets → Grille Lanceur v2
+
+Mode d’emploi détaillé sur GitHub (MODE_EMPLOI_GITHUB.txt).
+
+#LinuxMint #Cinnamon #Desklet #Linux #Bureau
+
+(Lien GitHub : à compléter)

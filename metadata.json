@@ -1,8 +1,8 @@
 {
-    "uuid": "grid-launcher@local",
-    "name": "Grille Lanceur",
-    "description": "Grille de raccourcis personnalisable",
-    "prevent-multiple-instances": false
+    "uuid": "grid-launcher-v2@local",
+    "name": "Grille Lanceur v2",
+    "description": "Grille ou liste de raccourcis — redimensionnement par menu (colonnes/lignes)",
+    "stylesheet": "stylesheet.css",
     "max-instances": "100",
-    "multiversion": true,
+    "prevent-multiple-instances": false
 }
