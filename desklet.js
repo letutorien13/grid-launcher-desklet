@@ -10,16 +10,16 @@ const Clutter = imports.gi.Clutter;
 const Tooltips = imports.ui.tooltips;
 const Pango = imports.gi.Pango;
 const DND = imports.ui.dnd;
-
+const ModalDialog = imports.ui.modalDialog;
 const STORAGE_PATH = GLib.get_home_dir() + '/.config/cinnamon_grid_launcher_data.json';
 const ICON_SLOT = 72;
 const ICON_SIZE = 56;
 const EDGE_GRAB = 22;
-const PAD = 10;
+const PAD = 5; // Appliqué selon ta modification précédente
 const TITLE_H = 32;
-const MIN_COLS = 3;
+const MIN_COLS = 1;
 const MAX_COLS = 16;
-const MIN_ROWS = 2;
+const MIN_ROWS = 1;
 const MAX_ROWS = 16;
 const DISPLAY_GRID = 'grid';
 const DISPLAY_LIST = 'list';
@@ -115,10 +115,48 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
         this._connectEdgeResize(this.listScroll);
     }
 
-    _isListMode() {
+    _isListMode()
+{
         return this.displayMode === DISPLAY_LIST;
     }
+_askDeltaDialog(title, onConfirm) {
+    let dialog = new ModalDialog.ModalDialog({ styleClass: 'modal-dialog' });
 
+    let box = new St.BoxLayout({
+        vertical: true,
+        style_class: 'dialog-content-box',
+        x_expand: true
+    });
+
+    let label = new St.Label({ text: title });
+    let entry = new St.Entry({ text: '1', can_focus: true, x_expand: true });
+
+    box.add_actor(label);
+    box.add_actor(entry);
+    dialog.contentLayout.add_actor(box);
+
+    dialog.setButtons([
+        {
+            label: 'Annuler',
+            action: () => dialog.close(global.get_current_time()),
+            key: Clutter.KEY_Escape
+        },
+        {
+            label: 'OK',
+            action: () => {
+                let n = parseInt(entry.get_text().trim(), 10);
+                if (!isNaN(n) && n > 0)
+                    onConfirm(n);
+                dialog.close(global.get_current_time());
+            },
+            key: Clutter.KEY_Return,
+            default: true
+        }
+    ]);
+
+    dialog.open(global.get_current_time());
+    entry.grab_key_focus();
+}
     _openIconContextMenu(menu, btn, event) {
         this._lastRightClickOnIcon = true;
 
@@ -190,23 +228,38 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
 
         this._menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        this.addColItem = new PopupMenu.PopupMenuItem('Ajouter une colonne');
+        this.addColItem = new PopupMenu.PopupMenuItem('Ajouter colonne ');
         this.addColItem.connect('activate', () => this._changeCols(1));
         this._menu.addMenuItem(this.addColItem);
 
-        this.remColItem = new PopupMenu.PopupMenuItem('Retirer une colonne');
+        this.remColItem = new PopupMenu.PopupMenuItem('Retirer colonne ');
         this.remColItem.connect('activate', () => this._changeCols(-1));
         this._menu.addMenuItem(this.remColItem);
 
-        this.addRowItem = new PopupMenu.PopupMenuItem('Ajouter une ligne');
+        this.addRowItem = new PopupMenu.PopupMenuItem('Ajouter ligne');
         this.addRowItem.connect('activate', () => this._changeRows(1));
         this._menu.addMenuItem(this.addRowItem);
 
-        this.remRowItem = new PopupMenu.PopupMenuItem('Retirer une ligne');
+        this.remRowItem = new PopupMenu.PopupMenuItem('Retirer ligne ');
         this.remRowItem.connect('activate', () => this._changeRows(-1));
         this._menu.addMenuItem(this.remRowItem);
 
         this._updateResizeMenuVisibility();
+this.addColItem.connect('activate', () => {
+    this._askDeltaDialog('Combien de colonnes ajouter ?', n => this._changeCols(n));
+});
+
+this.remColItem.connect('activate', () => {
+    this._askDeltaDialog('Combien de colonnes retirer ?', n => this._changeCols(-n));
+});
+
+this.addRowItem.connect('activate', () => {
+    this._askDeltaDialog('Combien de lignes ajouter ?', n => this._changeRows(n));
+});
+
+this.remRowItem.connect('activate', () => {
+    this._askDeltaDialog('Combien de lignes retirer ?', n => this._changeRows(-n));
+});
     }
 
     _updateDisplayModeMenuLabel() {
@@ -237,13 +290,13 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
         this._saveData();
     }
 
-    _chromeW() {
-        return 2 * PAD + 2 * EDGE_GRAB;
-    }
+   _chromeW() {
+    return 24;  // 2*padding(10) + 2*border(2) du CSS .gl2-frame
+}
 
-    _chromeH() {
-        return TITLE_H + 2 * PAD + 2 * EDGE_GRAB;
-    }
+_chromeH() {
+    return TITLE_H + 24;  // titre + chrome CSS (padding + border)
+}
 
     _widthForCols(cols) {
         return cols * ICON_SLOT + this._chromeW();
@@ -335,9 +388,30 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
     _changeRows(delta) {
         if (this._isListMode())
             return;
+
+        if (delta < 0) {
+            let lastRow = this.rows - 1;
+            let count = this.savedItems.length;
+            let cols = this.columns;
+
+            let lastRowHasItem = false;
+            for (let c = 0; c < cols; c++) {
+                let idx = lastRow * cols + c;
+                if (idx < count && this.savedItems[idx]) {
+                    lastRowHasItem = true;
+                    break;
+                }
+            }
+
+            if (lastRowHasItem) {
+                return;
+            }
+        }
+
         let next = Math.max(MIN_ROWS, Math.min(MAX_ROWS, this.rows + delta));
         if (next === this.rows)
             return;
+
         this.rows = next;
         this._applyLayout();
         this._refreshGrid();
@@ -346,7 +420,7 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
 
     _slotHasItem(row, col, cols, count) {
         let idx = row * cols + col;
-        return idx < count;
+        return idx < count && this.savedItems[idx] !== undefined && this.savedItems[idx] !== null;
     }
 
     _rowIsEmpty(row, cols, rows, count) {
@@ -727,9 +801,105 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
             let col = i % this.columns;
             let item = this.savedItems[i];
 
+let cellContainer = new St.Bin({
+    reactive: true,
+    width: ICON_SLOT,
+    height: ICON_SLOT,
+    x_align: St.Align.MIDDLE,
+    y_align: St.Align.MIDDLE
+});
+
+// Délégué DnD (inchangé, juste rattaché ici)
+cellContainer._delegate = { /* ... ton code handleDragOver / acceptDrop existant ... */ };
+
+if (item) {
+    // ... ton bloc existant qui crée btn et fait cellContainer.set_child(btn);
+} else {
+    // Placeholder visuel des cases vides — visible 56×56 centré
+    let placeholder = new St.Widget({
+        style_class: 'gl2-cell-empty',
+        width: 56,
+        height: 56
+    });
+    cellContainer.set_child(placeholder);
+}
+
+this.grid.add(cellContainer, { row: row, col: col });
+            cellContainer._delegate = {
+                handleDragOver: (source, actor, x, y, time) => DND.DragMotionResult.COPY_DROP,
+                acceptDrop: (source, actor, x, y, time) => {
+                    let sourceIdx = source.actor ? source.actor._itemIndex : undefined;
+                    if (sourceIdx !== undefined && sourceIdx !== null) {
+                        // Déplacement interne (réordonnancement)
+                        let targetIdx = i;
+                        if (sourceIdx === targetIdx) return true;
+
+                        let movingItem = this.savedItems[sourceIdx];
+                        this.savedItems.splice(sourceIdx, 1);
+
+                        // Si la cible est décalée à cause de la suppression
+                        if (targetIdx > this.savedItems.length) {
+                            this.savedItems.push(movingItem);
+                        } else {
+                            this.savedItems.splice(targetIdx, 0, movingItem);
+                        }
+
+                        this._saveData();
+                        this._refreshGrid();
+                        return true;
+                    } else {
+                        // Ajout externe à une position spécifique
+                        let newItem = this._extractItemFromSource(source);
+                        if (newItem) {
+                            if (this.savedItems.some(item => item && item.id === newItem.id))
+                                return false;
+
+                            // Combler le tableau si nécessaire pour insérer à l'index exact
+                            while (this.savedItems.length < i) {
+                                this.savedItems.push(null);
+                            }
+                            this.savedItems[i] = newItem;
+
+                            // Nettoyer les valeurs nulles éventuelles à la toute fin
+                            this._cleanSavedItemsTrailingNulls();
+                            this._saveData();
+                            this._refreshGrid();
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            };
+
             if (item) {
                 let btn = new St.Button({ reactive: true, style_class: 'gl2-cell-btn' });
                 btn._gl2IconBtn = true;
+                btn._itemIndex = i; // Enregistrement de la position de l'item
+
+                // Activation du DND Draggable sur le bouton d'icône
+                let draggable = DND.makeDraggable(btn);
+                btn._delegate = {
+                    actor: btn,
+                    _itemIndex: i,
+                    getDragActor: () => {
+                        let iconClone;
+                        if (item.type === 'app') {
+                            let app = this.appSystem.lookup_app(item.id);
+                            iconClone = app ? app.create_icon_texture(ICON_SIZE) : new St.Icon({ icon_name: 'application-x-executable', icon_size: ICON_SIZE });
+                        } else {
+                            try {
+                                let file = Gio.File.new_for_uri(item.id);
+                                let info = file.query_info('standard::icon', Gio.FileQueryInfoFlags.NONE, null);
+                                iconClone = new St.Icon({ gicon: info.get_icon(), icon_size: ICON_SIZE });
+                            } catch (e) {
+                                iconClone = new St.Icon({ icon_name: 'folder', icon_size: ICON_SIZE });
+                            }
+                        }
+                        return iconClone;
+                    },
+                    getDragActorSource: () => btn
+                };
+
                 let icon = null;
                 let tip = '';
 
@@ -768,6 +938,7 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
                 let removeItem = new PopupMenu.PopupMenuItem("Retirer l'élément");
                 removeItem.connect('activate', () => {
                     this.savedItems.splice(idx, 1);
+                    this._cleanSavedItemsTrailingNulls();
                     this._saveData();
                     this._refreshGrid();
                 });
@@ -782,11 +953,16 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
                 });
 
                 this._itemMenus.push(menu);
-                this.grid.add(btn, { row: row, col: col });
-            } else {
-                let empty = new St.Bin({ style_class: 'gl2-cell-empty' });
-                this.grid.add(empty, { row: row, col: col });
+                cellContainer.set_child(btn);
             }
+
+            this.grid.add(cellContainer, { row: row, col: col });
+        }
+    }
+
+    _cleanSavedItemsTrailingNulls() {
+        while (this.savedItems.length > 0 && this.savedItems[this.savedItems.length - 1] === null) {
+            this.savedItems.pop();
         }
     }
 
@@ -949,7 +1125,7 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
     }
 
     _addDroppedItem(item) {
-        if (!item || this.savedItems.some(i => i.id === item.id))
+        if (!item || this.savedItems.some(i => i && i.id === item.id))
             return false;
         this.savedItems.push(item);
         this._saveData();
