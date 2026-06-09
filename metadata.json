@@ -1,8 +1,9 @@
 {
-    "uuid": "grid-launcher-v2@local",
-    "name": "Grille Lanceur v2",
-    "description": "Grille ou liste de raccourcis — redimensionnement par menu (colonnes/lignes)",
-    "stylesheet": "stylesheet.css",
+    "uuid": "grid-launcher@letutorien",
+    "name": "Grille Lanceur",
+    "description": "Dock en grille évolutif",
+    "icon": "view-grid-symbolic",
     "max-instances": "100",
-    "prevent-multiple-instances": false
+    "multiversion": true,
+    "cinnamon-version": [ "5.4", "5.6", "5.8", "6.0" ]
 }

@@ -115,48 +115,49 @@ class GridLauncherV2Desklet extends Desklet.Desklet {
         this._connectEdgeResize(this.listScroll);
     }
 
-    _isListMode()
-{
+    _isListMode() {
         return this.displayMode === DISPLAY_LIST;
     }
-_askDeltaDialog(title, onConfirm) {
-    let dialog = new ModalDialog.ModalDialog({ styleClass: 'modal-dialog' });
 
-    let box = new St.BoxLayout({
-        vertical: true,
-        style_class: 'dialog-content-box',
-        x_expand: true
-    });
+    _askDeltaDialog(title, onConfirm) {
+        let dialog = new ModalDialog.ModalDialog({ styleClass: 'modal-dialog' });
 
-    let label = new St.Label({ text: title });
-    let entry = new St.Entry({ text: '1', can_focus: true, x_expand: true });
+        let box = new St.BoxLayout({
+            vertical: true,
+            style_class: 'dialog-content-box',
+            x_expand: true
+        });
 
-    box.add_actor(label);
-    box.add_actor(entry);
-    dialog.contentLayout.add_actor(box);
+        let label = new St.Label({ text: title });
+        let entry = new St.Entry({ text: '1', can_focus: true, x_expand: true });
 
-    dialog.setButtons([
-        {
-            label: 'Annuler',
-            action: () => dialog.close(global.get_current_time()),
-            key: Clutter.KEY_Escape
-        },
-        {
-            label: 'OK',
-            action: () => {
-                let n = parseInt(entry.get_text().trim(), 10);
-                if (!isNaN(n) && n > 0)
-                    onConfirm(n);
-                dialog.close(global.get_current_time());
+        box.add_actor(label);
+        box.add_actor(entry);
+        dialog.contentLayout.add_actor(box);
+
+        dialog.setButtons([
+            {
+                label: 'Annuler',
+                action: () => dialog.close(global.get_current_time()),
+                key: Clutter.KEY_Escape
             },
-            key: Clutter.KEY_Return,
-            default: true
-        }
-    ]);
+            {
+                label: 'OK',
+                action: () => {
+                    let n = parseInt(entry.get_text().trim(), 10);
+                    if (!isNaN(n) && n > 0)
+                        onConfirm(n);
+                    dialog.close(global.get_current_time());
+                },
+                key: Clutter.KEY_Return,
+                default: true
+            }
+        ]);
 
-    dialog.open(global.get_current_time());
-    entry.grab_key_focus();
-}
+        dialog.open(global.get_current_time());
+        entry.grab_key_focus();
+    }
+
     _openIconContextMenu(menu, btn, event) {
         this._lastRightClickOnIcon = true;
 
@@ -228,38 +229,31 @@ _askDeltaDialog(title, onConfirm) {
 
         this._menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        this.addColItem = new PopupMenu.PopupMenuItem('Ajouter colonne ');
-        this.addColItem.connect('activate', () => this._changeCols(1));
+       this.addColItem = new PopupMenu.PopupMenuItem('Ajouter colonne ');
+        this.addColItem.connect('activate', () => {
+            this._askDeltaDialog('Combien de colonnes ajouter ?', n => this._changeCols(n));
+        });
         this._menu.addMenuItem(this.addColItem);
 
         this.remColItem = new PopupMenu.PopupMenuItem('Retirer colonne ');
-        this.remColItem.connect('activate', () => this._changeCols(-1));
+        this.remColItem.connect('activate', () => {
+            this._askDeltaDialog('Combien de colonnes retirer ?', n => this._changeCols(-n));
+        });
         this._menu.addMenuItem(this.remColItem);
 
         this.addRowItem = new PopupMenu.PopupMenuItem('Ajouter ligne');
-        this.addRowItem.connect('activate', () => this._changeRows(1));
+        this.addRowItem.connect('activate', () => {
+            this._askDeltaDialog('Combien de lignes ajouter ?', n => this._changeRows(n));
+        });
         this._menu.addMenuItem(this.addRowItem);
 
-        this.remRowItem = new PopupMenu.PopupMenuItem('Retirer ligne ');
-        this.remRowItem.connect('activate', () => this._changeRows(-1));
+        this.remRowItem = new PopupMenu.PopupMenuItem('Retirer ligne: ');
+        this.remRowItem.connect('activate', () => {
+            this._askDeltaDialog('Combien de lignes retirer ?', n => this._changeRows(-n));
+        });
         this._menu.addMenuItem(this.remRowItem);
 
         this._updateResizeMenuVisibility();
-this.addColItem.connect('activate', () => {
-    this._askDeltaDialog('Combien de colonnes ajouter ?', n => this._changeCols(n));
-});
-
-this.remColItem.connect('activate', () => {
-    this._askDeltaDialog('Combien de colonnes retirer ?', n => this._changeCols(-n));
-});
-
-this.addRowItem.connect('activate', () => {
-    this._askDeltaDialog('Combien de lignes ajouter ?', n => this._changeRows(n));
-});
-
-this.remRowItem.connect('activate', () => {
-    this._askDeltaDialog('Combien de lignes retirer ?', n => this._changeRows(-n));
-});
     }
 
     _updateDisplayModeMenuLabel() {
@@ -291,12 +285,12 @@ this.remRowItem.connect('activate', () => {
     }
 
    _chromeW() {
-    return 24;  // 2*padding(10) + 2*border(2) du CSS .gl2-frame
-}
+        return 24;  // 2*padding(10) + 2*border(2) du CSS .gl2-frame
+    }
 
-_chromeH() {
-    return TITLE_H + 24;  // titre + chrome CSS (padding + border)
-}
+    _chromeH() {
+        return TITLE_H + 24;  // titre + chrome CSS (padding + border)
+    }
 
     _widthForCols(cols) {
         return cols * ICON_SLOT + this._chromeW();
@@ -385,38 +379,17 @@ _chromeH() {
         this._saveData();
     }
 
-    _changeRows(delta) {
-        if (this._isListMode())
-            return;
+  _changeRows(delta) {
+    if (this._isListMode()) return;
 
-        if (delta < 0) {
-            let lastRow = this.rows - 1;
-            let count = this.savedItems.length;
-            let cols = this.columns;
+    let next = Math.max(MIN_ROWS, Math.min(MAX_ROWS, this.rows + delta));
+    if (next === this.rows) return;
 
-            let lastRowHasItem = false;
-            for (let c = 0; c < cols; c++) {
-                let idx = lastRow * cols + c;
-                if (idx < count && this.savedItems[idx]) {
-                    lastRowHasItem = true;
-                    break;
-                }
-            }
-
-            if (lastRowHasItem) {
-                return;
-            }
-        }
-
-        let next = Math.max(MIN_ROWS, Math.min(MAX_ROWS, this.rows + delta));
-        if (next === this.rows)
-            return;
-
-        this.rows = next;
-        this._applyLayout();
-        this._refreshGrid();
-        this._saveData();
-    }
+    this.rows = next;
+    this._applyLayout();
+    this._refreshGrid(true);  // ← skipTrim = true, pas de trim auto
+    this._saveData();
+}
 
     _slotHasItem(row, col, cols, count) {
         let idx = row * cols + col;
