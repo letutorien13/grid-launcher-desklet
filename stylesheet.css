@@ -1,107 +1,57 @@
-/* Style de la mini-grille 2x2 sur le panneau principal */
-.grid-icon-launcher {
-    padding: 2px;
-    spacing: 2px;
+.gl2-frame {
+    background-color: rgba(28, 28, 32, 0.96);
+    border-radius: 8px;
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.22);
 }
 
-.mini-icon-padding {
-    padding: 1px;
+.gl2-frame.gl2-resizing {
+    border-color: rgba(120, 180, 255, 0.85);
 }
 
-.empty-slot {
-    width: 14px;
-    height: 14px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 2px;
-}
-
-/* Étiquette nom de catégorie au-dessus de la grille (menu ouvert) */
-.category-title-label {
-    background-color: #ffffff;
-    color: #000000;
-    padding: 6px 14px;
-    margin: 4px 8px 8px 8px;
+.gl2-title {
     font-weight: bold;
     font-size: 11pt;
-    border-radius: 4px;
-    text-align: center;
+    color: #eee;
+    padding-bottom: 6px;
 }
 
-/* Mode liste : icône + nom à droite */
-.popup-list {
-    padding: 4px 8px 8px 8px;
-    spacing: 2px;
-    min-width: 280px;
+.gl2-title-entry {
+    margin-bottom: 6px;
+    color: #fff;
 }
 
-.app-list-row {
-    padding: 4px 8px;
-    spacing: 10px;
-    border-radius: 4px;
-    min-width: 300px;
-    width: 100%;
-}
-
-.app-list-row:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.app-list-row:active {
-    background-color: rgba(255, 255, 255, 0.18);
-}
-
-.app-list-icon {
-    padding: 2px;
-}
-
-.app-list-name {
-    color: #ffffff;
-    font-size: 10pt;
-}
-
-/* Style de la grille d'icônes dans le menu principal ouvert */
-.popup-grid {
-    padding: 8px;
-    spacing: 6px;
-}
-
-.app-button {
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid transparent;
-}
-
-.app-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 3px solid rgba(255, 255, 255, 0.15);
-}
-
-.app-button:active {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Style du mini-menu contextuel (Clic droit de suppression) */
-.custom-context-menu {
-    background-color: #2c2c2c;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 5px;
+.gl2-cell-btn {
     padding: 4px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.custom-context-item {
-    padding: 6px 14px;
-    color: #ffffff;
-    border-radius: 3px;
-    font-size: 13px;
-    background-color: transparent;
-    border: none;
+.gl2-cell-empty {
+    /* width: 56px;  ← supprimer */
+    /* height: 56px; ← supprimer */
+    margin: 4px;
+    border: 2px dashed rgba(255, 255, 255, 0.28);
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.06);
 }
 
-.custom-context-item:hover {
-    background-color: rgba(255, 255, 255, 0.12);
+
+.gl2-list-scroll {
+    padding: 0;
 }
 
-.custom-context-item:active {
-    background-color: rgba(255, 255, 255, 0.2);
+.gl2-list-row {
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.gl2-list-row:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.gl2-list-label {
+    color: #eeeeee;
+    font-size: 10pt;
 }
